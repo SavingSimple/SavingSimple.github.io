@@ -1476,7 +1476,7 @@ const products = [
 const bundle = { id:99, slug:'complete-bundle', name:'The Complete Bundle', tagline:'Every tool. One price. Total control.',
   description:'Get all 7 SavingSimple tools in one download. Budget, save, track debt, manage bills, and build wealth — with everything you need to transform your finances from chaos to calm.',
   shopifyUrl:`${SHOPIFY_BASE}/complete-bundle-all-7-finance-planners`,
-  price:29.95, standardPrice:69.65, originalPrice:69.65, badge:'Best Value', icon:'💼',
+  price:42.65, standardPrice:70.65, originalPrice:70.65, badge:'Best Value', icon:'💼',
   includes:['All 7 tools','All printable sheets','All how-to guides'],
   files:[{ label:'Complete Bundle (ZIP)', file:'SavingSimple_Complete_Bundle.zip' }] };
 const getProductBySlug = (slug) => products.find(p => p.slug === slug);
@@ -1931,7 +1931,7 @@ function Home() {
                 <div className="bundle-card__price-block">
                   <p className="bundle-card__original">A${bundle.originalPrice.toFixed(2)}</p>
                   <span className="bundle-card__price">A${bundle.price.toFixed(2)}</span>
-                  <p className="bundle-card__saving">Save over 50%</p>
+                  <p className="bundle-card__saving">Save {Math.round((1 - bundle.price / bundle.originalPrice) * 100)}%</p>
                 </div>
               </div>
               <BundlePreviewStrip />
@@ -2037,7 +2037,7 @@ function Shop() {
             <div className="bundle-card__price-block">
               <p className="bundle-card__original">A${bundle.originalPrice.toFixed(2)} if bought separately</p>
               <span className="bundle-card__price">A${bundle.price.toFixed(2)}</span>
-              <p className="bundle-card__saving">Save over 50%</p>
+              <p className="bundle-card__saving">Save {Math.round((1 - bundle.price / bundle.originalPrice) * 100)}%</p>
             </div>
           </div>
         </AnimatedSection>
@@ -2065,7 +2065,7 @@ function BundleDetail() {
               <div className="product-detail__price-row">
                 <span className="product-detail__price" style={{ color:'var(--gold)' }}>A${bundle.price.toFixed(2)}</span>
                 <span style={{ fontFamily:'var(--font-mono)', color:'var(--text-dim)', textDecoration:'line-through', fontSize:'1rem' }}>A${bundle.originalPrice.toFixed(2)}</span>
-                <span className="badge badge-accent">Save 50%</span>
+                <span className="badge badge-accent">Save {Math.round((1 - bundle.price / bundle.originalPrice) * 100)}%</span>
               </div>
               <p style={{ color:'var(--text-muted)', fontSize:'0.9rem', lineHeight:1.7 }}>{bundle.description}</p>
               <div className="product-detail__features">
