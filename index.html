@@ -172,8 +172,10 @@ body {
 .btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.75rem 1.75rem;
+  border: 1.5px solid transparent; /* keeps outline and filled buttons the same height */
   border-radius: var(--r);
   font-weight: 600;
   font-size: 0.95rem;
@@ -194,7 +196,7 @@ body {
 .btn-outline {
   background: transparent;
   color: var(--text);
-  border: 1.5px solid var(--border-2);
+  border-color: var(--border-2);
 }
 .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
 
@@ -739,6 +741,9 @@ body {
   color: var(--text);
 }
 .product-card__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.5rem 1.1rem;
   border-radius: var(--r-sm);
   font-size: 0.82rem;
@@ -752,6 +757,11 @@ body {
   background: var(--accent);
   color: #FFFFFF;
   transform: scale(1.04);
+}
+.product-card__btn--outline {
+  background: transparent;
+  color: var(--text-muted);
+  border-color: var(--border-2);
 }
 .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
 
@@ -1255,7 +1265,7 @@ textarea.form-input { resize: vertical; min-height: 140px; }
 @media (max-width: 900px) {
   .hero { grid-template-columns: 1fr; padding-top: calc(var(--nav-h) + 3rem); padding-bottom: 4rem; text-align: center; }
   .hero__sub, .hero__actions, .hero__stats { margin-left: auto; margin-right: auto; }
-  .hero__visual { display: none; }
+  .hero__visual { margin-top: 1rem; }
   .transform__grid { grid-template-columns: 1fr; }
   .transform__arrow { transform: rotate(90deg); width: 48px; height: 48px; margin: 0 auto; }
   .steps { grid-template-columns: 1fr; }
@@ -1314,6 +1324,9 @@ textarea.form-input { resize: vertical; min-height: 140px; }
 @media (max-width: 480px) {
   .bundle-card { padding: 1.25rem; }
   .bundle-card__price { font-size: 2rem; }
+
+  /* Buy buttons — allow long price labels to wrap instead of overflowing */
+  .btn-lg { padding: 0.9rem 1.25rem; font-size: 0.95rem; white-space: normal; text-align: center; }
 
   /* Cart item — stack price below name on tight screens */
   .cart-item { grid-template-columns: auto 1fr; }
@@ -1663,7 +1676,7 @@ function ProductCard({ product }) {
         </div>
       </Link>
       <div style={{ padding:'0 1.5rem 1.5rem', display:'flex', gap:'0.5rem' }}>
-        <button className="btn btn-outline" style={{ flex:1 }} onClick={() => addItem(product)}>Add to Cart</button>
+        <button className="product-card__btn product-card__btn--outline" style={{ flex:1 }} onClick={() => addItem(product)}>Add to Cart</button>
         <a href={`${SHOPIFY_BASE}/${product.slug}`} className="product-card__btn" style={{ flex:1 }}>Buy Now →</a>
       </div>
     </article>
@@ -2026,9 +2039,9 @@ function BundleDetail() {
                 <p className="product-detail__features-title">What's included</p>
                 {products.map(p => <div key={p.id} className="feature-item">{p.name} — A${(p.standardPrice || p.price).toFixed(2)}</div>)}
               </div>
-              <div style={{ display:'flex', gap:'0.75rem' }}>
-                <button className="btn btn-outline btn-lg" style={{ flex:1 }} onClick={() => addItem(bundle)}>Add to Cart</button>
-                <a href={bundle.shopifyUrl} className="btn btn-gold btn-lg" style={{ flex:1 }}>Buy Now — A${bundle.price.toFixed(2)} →</a>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
+                <button className="btn btn-outline btn-lg" style={{ flex:'1 1 160px' }} onClick={() => addItem(bundle)}>Add to Cart</button>
+                <a href={bundle.shopifyUrl} className="btn btn-gold btn-lg" style={{ flex:'1 1 220px' }}>Buy Now — A${bundle.price.toFixed(2)} →</a>
               </div>
               <div className="stripe-note"><span className="stripe-note__ico"><Icon name="lock" size={14} /></span> Secure checkout via Shopify · Instant delivery to your email</div>
             </div>
@@ -2074,9 +2087,9 @@ function ProductDetail({ slug }) {
                 <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text-dim)', marginBottom:'0.5rem' }}>Files included</p>
                 {product.includes.map(f => <div key={f} className="include-item">{f}</div>)}
               </div>
-              <div style={{ display:'flex', gap:'0.75rem' }}>
-                <button className="btn btn-outline btn-lg" style={{ flex:1 }} onClick={() => addItem(product)}>Add to Cart</button>
-                <a href={`${SHOPIFY_BASE}/${product.slug}`} className="btn btn-primary btn-lg" style={{ flex:1 }}>Buy Now — A${product.price.toFixed(2)} →</a>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:'0.75rem' }}>
+                <button className="btn btn-outline btn-lg" style={{ flex:'1 1 160px' }} onClick={() => addItem(product)}>Add to Cart</button>
+                <a href={`${SHOPIFY_BASE}/${product.slug}`} className="btn btn-primary btn-lg" style={{ flex:'1 1 220px' }}>Buy Now — A${product.price.toFixed(2)} →</a>
               </div>
               <div className="stripe-note"><span className="stripe-note__ico"><Icon name="lock" size={14} /></span> Secure checkout via Shopify · Instant digital delivery to your inbox</div>
             </div>
