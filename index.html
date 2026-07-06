@@ -1398,8 +1398,10 @@ textarea.form-input { resize: vertical; min-height: 140px; }
   <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef, useContext, createContext, useCallback } = React;
 const logo = 'public/logo-mark.png';
-const DOWNLOAD_BASE = 'public/downloads';
 const SHOPIFY_BASE = 'https://savingsimple-2.myshopify.com/products';
+const SHOPIFY_CART = 'https://savingsimple-2.myshopify.com/cart';
+/* Builds a Shopify cart permalink — lands the customer in Shopify checkout with every item pre-loaded */
+const shopifyCheckoutUrl = (items) => `${SHOPIFY_CART}/${items.map(i => `${i.variantId}:${i.quantity}`).join(',')}`;
 
 /* ═══════════════════════ DATA (prices in AUD) ═══════════════════════ */
 const FILE_INCLUDES = ['Excel spreadsheet (.xlsx)','Step-by-step how-to guide (PDF)','Printable sheet (PDF)'];
@@ -1409,50 +1411,49 @@ const fileSet = (base) => [
   { label:'Printable Sheet (PDF)', file:`${base}_Printable.pdf` },
 ];
 const products = [
-  { id:1, slug:'budget-planner', name:'Budget Planner', tagline:'Take control of every dollar you earn',
+  { id:1, slug:'budget-planner', variantId:'43911886307406', name:'Budget Planner', tagline:'Take control of every dollar you earn',
     description:'A comprehensive monthly budget planner that maps every cent of income and expenditure. Track fixed costs, variable spending, and see exactly where your money goes — so you can redirect it to where it matters most.',
     price:5.95, standardPrice:9.95, category:'Planning', badge:'Best Seller', accentColor:'#4ADE80', icon:'📊',
     features:['Monthly income & expense tracking','Automatic surplus/deficit calculation','Category breakdown with visual charts','Printable PDF included','Step-by-step how-to guide'],
     includes:FILE_INCLUDES, files:fileSet('Budget_Planner') },
-  { id:2, slug:'payday-account-splitter', name:'Payday Account Splitter', tagline:'Split your pay — before you spend it',
+  { id:2, slug:'payday-account-splitter', variantId:'43911886340174', name:'Payday Account Splitter', tagline:'Split your pay — before you spend it',
     description:'Enter your monthly income and the tool instantly splits it across bills, savings, spending money, and emergency fund using proven percentage-based budgeting. Never overspend on one category again.',
     price:5.95, standardPrice:9.95, category:'Planning', badge:null, accentColor:'#60A5FA', icon:'✂️',
     features:['Automatic pay splitting by category','Customisable percentage allocations','Multiple account support','Weekly and monthly views','Printable summary sheet'],
     includes:FILE_INCLUDES, files:fileSet('Payday_Account_Splitter') },
-  { id:3, slug:'savings-goal-tracker', name:'Savings Goal Tracker', tagline:'See your goals — and actually reach them',
+  { id:3, slug:'savings-goal-tracker', variantId:'43911886372942', name:'Savings Goal Tracker', tagline:'See your goals — and actually reach them',
     description:'Set up to 5 savings goals simultaneously and watch your progress update in real time. From holiday funds to house deposits, this tracker keeps you motivated with visual progress bars and projected completion dates.',
     price:6.95, standardPrice:10.95, category:'Savings', badge:null, accentColor:'#A78BFA', icon:'🎯',
     features:['Track up to 5 simultaneous goals','Visual progress bars for each goal','Projected completion dates','Contribution history log','Celebration milestones'],
     includes:FILE_INCLUDES, files:fileSet('Savings_Goal_Tracker') },
-  { id:4, slug:'debt-payoff-planner', name:'Debt Payoff Planner', tagline:'Build your escape from debt — one payment at a time',
+  { id:4, slug:'debt-payoff-planner', variantId:'43911886405710', name:'Debt Payoff Planner', tagline:'Build your escape from debt — one payment at a time',
     description:'List all your debts and let the planner calculate your fastest route to freedom using the avalanche or snowball method. See your debt-free date clearly and watch it get closer with every payment.',
     price:5.95, standardPrice:9.95, category:'Debt', badge:'Most Impactful', accentColor:'#F87171', icon:'⛓️',
     features:['Avalanche & Snowball method calculators','Projected debt-free date','Interest savings calculator','Payment schedule generator','Progress tracking dashboard'],
     includes:FILE_INCLUDES, files:fileSet('Debt_Payoff_Planner') },
-  { id:5, slug:'bill-subscription-tracker', name:'Bill & Subscription Tracker', tagline:'Never miss a payment. Never pay for what you forgot.',
+  { id:5, slug:'bill-subscription-tracker', variantId:'43911886438478', name:'Bill & Subscription Tracker', tagline:'Never miss a payment. Never pay for what you forgot.',
     description:'A master log of every bill and subscription with due dates, amounts, and auto-renewal flags. Get a monthly total at a glance, spot subscriptions you no longer use, and stay permanently on top of recurring costs.',
     price:5.95, standardPrice:9.95, category:'Tracking', badge:null, accentColor:'#FB923C', icon:'📋',
     features:['Complete bill & subscription log','Monthly total at a glance','Due date calendar view','Auto-renewal flags','Cancellation tracker'],
     includes:FILE_INCLUDES, files:fileSet('Bill_Subscription_Tracker') },
-  { id:6, slug:'net-worth-tracker', name:'Net Worth Tracker', tagline:'Know exactly where you stand financially',
+  { id:6, slug:'net-worth-tracker', variantId:'43911886471246', name:'Net Worth Tracker', tagline:'Know exactly where you stand financially',
     description:'Log all your assets and liabilities to calculate your true net worth. Track it monthly and watch the trend line move in the right direction. The single most important number in your financial life — made simple.',
     price:5.95, standardPrice:9.95, category:'Tracking', badge:null, accentColor:'#34D399', icon:'📈',
     features:['Assets vs. liabilities breakdown','Monthly net worth log','Trend chart to track progress','Multiple asset categories','Annual summary view'],
     includes:FILE_INCLUDES, files:fileSet('Net_Worth_Tracker') },
-  { id:7, slug:'money-goal-accountability-planner', name:'Money Goal Accountability Planner', tagline:'Commit to your financial goals — and keep the promise',
+  { id:7, slug:'money-goal-accountability-planner', variantId:'43911886569550', name:'Money Goal Accountability Planner', tagline:'Commit to your financial goals — and keep the promise',
     description:'Set annual financial goals and break them down into monthly and weekly actions. Built-in reflection prompts, weekly check-ins, and a year-at-a-glance review keep you consistently moving toward the life you are building.',
     price:5.95, standardPrice:9.95, category:'Planning', badge:'Premium', accentColor:'#C9A574', icon:'🏆',
     features:['Annual goal-setting framework','Monthly & weekly action breakdown','Weekly check-in prompts','Year-at-a-glance review','Mindset & motivation section'],
     includes:FILE_INCLUDES, files:fileSet('Money_Goal_Accountability_Planner') },
 ];
-const bundle = { id:99, slug:'complete-bundle', name:'The Complete Bundle', tagline:'Every tool. One price. Total control.',
+const bundle = { id:99, slug:'complete-bundle', variantId:'43911886602318', name:'The Complete Bundle', tagline:'Every tool. One price. Total control.',
   description:'Get all 7 SavingSimple tools in one download. Budget, save, track debt, manage bills, and build wealth — with everything you need to transform your finances from chaos to calm.',
   shopifyUrl:`${SHOPIFY_BASE}/complete-bundle-all-7-finance-planners`,
   price:42.65, standardPrice:70.65, originalPrice:70.65, badge:'Best Value', icon:'💼',
   includes:['All 7 tools','All printable sheets','All how-to guides'],
   files:[{ label:'Complete Bundle (ZIP)', file:'SavingSimple_Complete_Bundle.zip' }] };
 const getProductBySlug = (slug) => products.find(p => p.slug === slug);
-const fileHref = (slug, file) => `${DOWNLOAD_BASE}/${slug}/${file}`;
 const previewHref = (slug) => `public/previews/${slug}.png`;
 
 /* red → amber → green interpolation for the live dashboard */
@@ -1661,8 +1662,9 @@ function ProductCard({ product }) {
           </div>
         </div>
       </Link>
-      <div style={{ padding:'0 1.5rem 1.5rem' }}>
-        <a href={`${SHOPIFY_BASE}/${product.slug}`} className="product-card__btn btn-full">Buy Now →</a>
+      <div style={{ padding:'0 1.5rem 1.5rem', display:'flex', gap:'0.5rem' }}>
+        <button className="btn btn-outline" style={{ flex:1 }} onClick={() => addItem(product)}>Add to Cart</button>
+        <a href={`${SHOPIFY_BASE}/${product.slug}`} className="product-card__btn" style={{ flex:1 }}>Buy Now →</a>
       </div>
     </article>
   );
@@ -1695,7 +1697,8 @@ function CartDrawer() {
         {items.length > 0 && (
           <div className="drawer__footer">
             <div className="drawer__total"><span className="drawer__total-label">Total</span><span className="drawer__total-value">A${total.toFixed(2)}</span></div>
-            <Link to="/checkout" className="btn btn-primary btn-lg btn-full" onClick={() => setDrawerOpen(false)}>Proceed to Checkout →</Link>
+            <a href={shopifyCheckoutUrl(items)} className="btn btn-primary btn-lg btn-full">Checkout Securely →</a>
+            <p style={{ fontSize:'0.72rem', color:'var(--text-dim)', textAlign:'center', marginTop:'0.6rem' }}>You'll complete payment on our secure Shopify checkout</p>
           </div>
         )}
       </aside>
@@ -2023,7 +2026,10 @@ function BundleDetail() {
                 <p className="product-detail__features-title">What's included</p>
                 {products.map(p => <div key={p.id} className="feature-item">{p.name} — A${(p.standardPrice || p.price).toFixed(2)}</div>)}
               </div>
-              <a href={bundle.shopifyUrl} className="btn btn-gold btn-lg btn-full">Buy Now — A${bundle.price.toFixed(2)} →</a>
+              <div style={{ display:'flex', gap:'0.75rem' }}>
+                <button className="btn btn-outline btn-lg" style={{ flex:1 }} onClick={() => addItem(bundle)}>Add to Cart</button>
+                <a href={bundle.shopifyUrl} className="btn btn-gold btn-lg" style={{ flex:1 }}>Buy Now — A${bundle.price.toFixed(2)} →</a>
+              </div>
               <div className="stripe-note"><span className="stripe-note__ico"><Icon name="lock" size={14} /></span> Secure checkout via Shopify · Instant delivery to your email</div>
             </div>
           </div>
@@ -2068,7 +2074,10 @@ function ProductDetail({ slug }) {
                 <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text-dim)', marginBottom:'0.5rem' }}>Files included</p>
                 {product.includes.map(f => <div key={f} className="include-item">{f}</div>)}
               </div>
-              <a href={`${SHOPIFY_BASE}/${product.slug}`} className="btn btn-primary btn-lg btn-full">Buy Now — A${product.price.toFixed(2)} →</a>
+              <div style={{ display:'flex', gap:'0.75rem' }}>
+                <button className="btn btn-outline btn-lg" style={{ flex:1 }} onClick={() => addItem(product)}>Add to Cart</button>
+                <a href={`${SHOPIFY_BASE}/${product.slug}`} className="btn btn-primary btn-lg" style={{ flex:1 }}>Buy Now — A${product.price.toFixed(2)} →</a>
+              </div>
               <div className="stripe-note"><span className="stripe-note__ico"><Icon name="lock" size={14} /></span> Secure checkout via Shopify · Instant digital delivery to your inbox</div>
             </div>
           </div>
@@ -2110,118 +2119,11 @@ function CartPage() {
               {items.map(item => <div key={item.id} className="cart__summary-row"><span>{item.name}</span><span>A${item.price.toFixed(2)}</span></div>)}
               <div className="cart__summary-row"><span>Digital delivery</span><span style={{ color:'var(--accent)' }}>Free</span></div>
               <div className="cart__summary-total"><span>Total</span><span>A${total.toFixed(2)}</span></div>
-              <Link to="/checkout" className="btn btn-primary btn-lg btn-full" style={{ marginTop:'1.25rem' }}>Proceed to Checkout →</Link>
+              <a href={shopifyCheckoutUrl(items)} className="btn btn-primary btn-lg btn-full" style={{ marginTop:'1.25rem' }}>Checkout Securely →</a>
               <Link to="/shop" className="btn btn-ghost btn-full" style={{ marginTop:'0.5rem' }}>Continue Shopping</Link>
             </div>
           </React.Fragment>
         )}
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════ CHECKOUT ═══════════════════════ */
-function Checkout() {
-  const { items, total, clearCart } = useCart();
-  const navigate = useNavigate();
-  const [form, setForm] = useState({ name:'', email:'' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  if (items.length === 0) {
-    return (
-      <div className="page" style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'70vh' }}>
-        <div style={{ textAlign:'center' }}><p style={{ color:'var(--text-muted)', marginBottom:'1rem' }}>Nothing to check out.</p><Link to="/shop" className="btn btn-primary">Browse tools</Link></div>
-      </div>
-    );
-  }
-  const handleChange = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!form.name || !form.email) { setError('Please fill in all fields.'); return; }
-    setLoading(true); setError('');
-    const snapshot = items.slice();
-    await new Promise(r => setTimeout(r, 1600));
-    clearCart();
-    navigate('/order-confirmation', { state: { email: form.email, items: snapshot, total } });
-  };
-  return (
-    <div className="page">
-      <div className="page-header container"><p className="page-header__label">Checkout</p><h1 className="page-header__title">Complete your order</h1></div>
-      <div className="checkout">
-        <div className="checkout__grid">
-          <div className="checkout__summary">
-            <h2 className="checkout__summary-title">Order summary</h2>
-            {items.map(item => <div key={item.id} className="checkout__summary-item"><span className="checkout__summary-name">{item.name}</span><span className="checkout__summary-price">A${item.price.toFixed(2)}</span></div>)}
-            <div className="checkout__summary-item"><span className="checkout__summary-name">Digital delivery</span><span style={{ color:'var(--accent)', fontFamily:'var(--font-mono)', fontSize:'0.9rem' }}>Free</span></div>
-            <div className="checkout__total"><span>Total</span><span>A${total.toFixed(2)}</span></div>
-            <div style={{ marginTop:'1.5rem', padding:'1rem', background:'var(--bg-card-2)', borderRadius:'var(--r)', border:'1px solid var(--border)' }}>
-              <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.06em', textTransform:'uppercase', color:'var(--accent)', marginBottom:'0.5rem' }}>After purchase</p>
-              <p style={{ fontSize:'0.82rem', color:'var(--text-muted)', lineHeight:1.6 }}>Your files will be delivered to your email address within a few minutes. Check your spam folder if you do not receive them.</p>
-            </div>
-          </div>
-          <form className="checkout__form" onSubmit={handleSubmit}>
-            <h2 style={{ fontFamily:'var(--font-display)', fontSize:'1.2rem' }}>Contact details</h2>
-            <div className="form-group"><label className="form-label" htmlFor="name">Full name</label><input id="name" name="name" className="form-input" type="text" placeholder="Jane Smith" value={form.name} onChange={handleChange} required /></div>
-            <div className="form-group"><label className="form-label" htmlFor="email">Email address <span style={{ color:'var(--text-dim)', fontWeight:400 }}>(your files are delivered here)</span></label><input id="email" name="email" className="form-input" type="email" placeholder="jane@example.com" value={form.email} onChange={handleChange} required /></div>
-            <h2 style={{ fontFamily:'var(--font-display)', fontSize:'1.2rem', marginTop:'0.5rem' }}>Payment details</h2>
-            <div className="stripe-note"><span className="stripe-note__ico"><Icon name="lock" size={14} /></span><span>Your payment is secured by Stripe. We never store your card details.</span></div>
-            <div className="form-group"><label className="form-label">Card number</label><div className="card-mock">•••• •••• •••• ••••  <span style={{ float:'right' }}>💳</span></div><p style={{ fontSize:'0.72rem', color:'var(--text-dim)', marginTop:'0.35rem' }}>Connect Stripe to enable real card entry.</p></div>
-            <div className="form-row">
-              <div className="form-group"><label className="form-label">Expiry date</label><div className="card-mock">MM / YY</div></div>
-              <div className="form-group"><label className="form-label">CVC</label><div className="card-mock">•••</div></div>
-            </div>
-            {error && <p style={{ color:'var(--stress)', fontSize:'0.85rem' }}>{error}</p>}
-            <button type="submit" className="btn btn-primary btn-lg btn-full" disabled={loading}>
-              {loading ? <span style={{ display:'inline-flex', alignItems:'center', gap:'0.5rem' }}><span style={{ width:16, height:16, border:'2px solid rgba(255,255,255,0.45)', borderTopColor:'#FFFFFF', borderRadius:'50%', animation:'spin 0.7s linear infinite', display:'block' }} />Processing…</span> : `Pay A$${total.toFixed(2)} →`}
-            </button>
-            <p style={{ fontSize:'0.75rem', color:'var(--text-dim)', textAlign:'center' }}>By completing this purchase you agree to our <Link to="/privacy-policy" style={{ color:'var(--text-muted)', textDecoration:'underline' }}>Terms of Service</Link> and <Link to="/refund-policy" style={{ color:'var(--text-muted)', textDecoration:'underline' }}>Refund Policy</Link>.</p>
-          </form>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════ ORDER CONFIRMATION ═══════════════════════ */
-function OrderConfirmation() {
-  const { state } = useLocation();
-  const email = (state && state.email) || 'your inbox';
-  const items = (state && state.items) || [];
-  const total = (state && state.total) || 0;
-  return (
-    <div className="page">
-      <div className="confirmation">
-        <div className="confirmation__icon"><span style={{ display:'inline-flex', alignItems:'center', justifyContent:'center', width:'3rem', height:'3rem', borderRadius:'50%', background:'rgba(14,124,66,0.12)', color:'var(--accent)' }}><Icon name="check" size={28} /></span></div>
-        <h1 className="confirmation__title">Order confirmed!</h1>
-        <p className="confirmation__sub">Your tools are ready to download right now — and a copy is on its way to <strong style={{ color:'var(--text)' }}>{email}</strong> so you always have them to hand.</p>
-        {items.length > 0 && (
-          <div className="confirmation__downloads">
-            <p className="confirmation__delivery-title" style={{ textAlign:'center', display:'flex', alignItems:'center', justifyContent:'center', gap:'0.4rem' }}><Icon name="download" size={16} /> Your downloads</p>
-            {items.map(item => (
-              <div key={item.id} className="dl-group">
-                <p className="dl-group__name">{item.name}</p>
-                <div className="dl-grid">
-                  {(item.files || []).map(f => <a key={f.file} className="dl-btn" href={fileHref(item.slug, f.file)} download><Icon name="download" size={13} /> {f.label}</a>)}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-        <div className="confirmation__delivery">
-          <p className="confirmation__delivery-title">📬 Sent to your inbox too</p>
-          <p className="confirmation__delivery-text">A copy of your files is on its way to your email within 5 minutes. If you do not see it, check your spam or junk folder and mark us as safe so future emails land in your inbox.</p>
-        </div>
-        {items.length > 0 && (
-          <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'var(--r-lg)', padding:'1.25rem 1.5rem', width:'100%', maxWidth:'400px', marginBottom:'2rem' }}>
-            <p style={{ fontSize:'0.75rem', fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', color:'var(--text-dim)', marginBottom:'0.75rem' }}>Your order</p>
-            {items.map(item => <div key={item.id} style={{ display:'flex', justifyContent:'space-between', padding:'0.4rem 0', fontSize:'0.88rem', borderBottom:'1px solid var(--border)', color:'var(--text-muted)' }}><span>{item.icon} {item.name}</span><span style={{ fontFamily:'var(--font-mono)', color:'var(--text)' }}>A${item.price.toFixed(2)}</span></div>)}
-            {total > 0 && <div style={{ display:'flex', justifyContent:'space-between', paddingTop:'0.75rem', fontWeight:700 }}><span>Total paid</span><span style={{ fontFamily:'var(--font-mono)', color:'var(--accent)' }}>A${total.toFixed(2)}</span></div>}
-          </div>
-        )}
-        <div style={{ display:'flex', gap:'1rem', flexWrap:'wrap', justifyContent:'center' }}>
-          <Link to="/shop" className="btn btn-outline">Browse more tools</Link>
-          <Link to="/" className="btn btn-primary">Back to home</Link>
-        </div>
       </div>
     </div>
   );
@@ -2434,8 +2336,6 @@ function App() {
   else if (path === '/shop') page = <Shop />;
   else if (path.indexOf('/product/') === 0) page = <ProductDetail slug={path.split('/')[2]} />;
   else if (path === '/cart') page = <CartPage />;
-  else if (path === '/checkout') page = <Checkout />;
-  else if (path === '/order-confirmation') page = <OrderConfirmation />;
   else if (path === '/about') page = <About />;
   else if (path === '/contact') page = <Contact />;
   else if (path === '/faq') page = <FAQ />;
