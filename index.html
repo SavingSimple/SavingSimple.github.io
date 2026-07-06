@@ -1839,7 +1839,24 @@ function BundlePreviewStrip() {
 function Home() {
   const [email, setEmail] = useState('');
   const [emailSent, setEmailSent] = useState(false);
-  const handleEmail = (e) => { e.preventDefault(); if (email) setEmailSent(true); };
+  const [emailSending, setEmailSending] = useState(false);
+  const [emailError, setEmailError] = useState('');
+  const handleEmail = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setEmailSending(true); setEmailError('');
+    try {
+      const res = await fetch('https://formspree.io/f/xkolendw', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ email, _subject: 'New newsletter subscriber' }),
+      });
+      if (res.ok) setEmailSent(true);
+      else setEmailError('Something went wrong — please try again.');
+    } catch {
+      setEmailError('Something went wrong — please try again.');
+    } finally { setEmailSending(false); }
+  };
   return (
     <React.Fragment>
       <div className="hero-wrapper">
@@ -1946,12 +1963,13 @@ function Home() {
           <p className="section__label" style={{ justifyContent:'center' }}>Stay in the loop</p>
           <h2 className="capture__headline">Get free financial tips<br />straight to your inbox</h2>
           <p className="capture__sub">Weekly budgeting tips, tool updates and early-access offers — straight to your inbox.</p>
-          {emailSent ? <div className="contact__success">You're in. Check your inbox for a confirmation.</div> : (
+          {emailSent ? <div className="contact__success">You're in — keep an eye out for your first weekly tip.</div> : (
             <form className="capture__form" onSubmit={handleEmail}>
               <input type="email" className="capture__input" placeholder="your@email.com" value={email} onChange={e => setEmail(e.target.value)} required aria-label="Email address" />
-              <button type="submit" className="btn btn-primary">Subscribe</button>
+              <button type="submit" className="btn btn-primary" disabled={emailSending}>{emailSending ? 'Subscribing…' : 'Subscribe'}</button>
             </form>
           )}
+          {emailError && !emailSent && <p style={{ fontSize:'0.85rem', color:'var(--stress)', marginTop:'0.75rem' }}>{emailError}</p>}
           <p className="capture__note">No spam. Unsubscribe any time.</p>
         </AnimatedSection>
       </div>
@@ -2190,7 +2208,7 @@ function Contact() {
     e.preventDefault();
     setLoading(true); setError('');
     try {
-      const res = await fetch('https://formspree.io/info@savingsimple.com.au', {
+      const res = await fetch('https://formspree.io/f/xgojqejj', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
         body: JSON.stringify({ name: form.name, _replyto: form.email, subject: form.subject, message: form.message }),
